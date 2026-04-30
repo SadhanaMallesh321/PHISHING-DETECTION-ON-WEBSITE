@@ -1,0 +1,17 @@
+body{
+font-family: Arial;
+width: 220px;
+text-align: center;
+padding: 10px;
+}
+
+button{
+padding: 8px;
+margin-top: 10px;
+cursor: pointer;
+}
+
+#result{
+margin-top: 15px;
+font-weight: bold;
+}

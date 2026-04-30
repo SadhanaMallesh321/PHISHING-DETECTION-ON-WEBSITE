@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Phishing Website Detector",
+  "version": "1.0",
+  "description": "Detect phishing websites using Machine Learning",
+  "permissions": ["tabs", "activeTab", "storage"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}

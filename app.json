@@ -1,0 +1,11 @@
+{
+  "name": "Phishing Detection API",
+  "description": "ML-powered API for detecting phishing websites",
+  "repository": "https://github.com/yourusername/phishing-detection",
+  "keywords": ["flask", "phishing", "machine-learning", "api"],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
