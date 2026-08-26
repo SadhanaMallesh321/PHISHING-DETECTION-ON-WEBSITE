@@ -1,3 +1,5 @@
+const URL_LENGTH_THRESHOLD = 75; // Set the URL length threshold here
+
 function extractFeatures(url) {
   let features = new Array(48).fill(0);
 
@@ -68,26 +70,99 @@ function extractFeatures(url) {
   return features;
 }
 
+function formatPercentage(value) {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "N/A";
+  }
+  return `${Math.round(value * 100)}%`;
+}
+
+function buildFeatureTable(features) {
+  let html = `
+    <div class="features-title">Feature-by-feature analysis</div>
+    <div class="features-table-wrapper">
+      <table class="features-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Value</th>
+            <th>Threshold / Reference</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  features.forEach(row => {
+    let reference = row.reference !== null && row.reference !== undefined ? row.reference : "No fixed threshold";
+    html += `
+      <tr>
+        <td>${row.name}</td>
+        <td>${row.value}</td>
+        <td>${reference}</td>
+        <td class="status ${row.status.toLowerCase().replace(/ /g, "-")}">${row.status}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  return html;
+}
+
+function buildSummaryCard(data) {
+  const summary = data.summary || {};
+  const confidence = formatPercentage(summary.confidence);
+  const result = summary.result || data.prediction;
+  const brief = summary.brief || data.explanation || "No summary available.";
+  const overall = summary.overall || {};
+
+  const suspiciousCount = overall.suspicious_count ?? 0;
+  const normalCount = overall.normal_count ?? 0;
+  const modelEvaluated = overall.model_evaluated_count ?? 0;
+  const mostSuspicious = (overall.most_important_suspicious || []).join(", ") || "None";
+  const mostLegitimate = (overall.most_important_legitimate || []).join(", ") || "None";
+
+  let highlights = `
+    <div class="summary-section">
+      <div><strong>Why Phishing:</strong> ${summary.why_phishing || "No suspicious evidence was identified."}</div>
+      <div><strong>Why Legitimate:</strong> ${summary.why_legitimate || "No positive evidence was identified."}</div>
+    </div>
+  `;
+
+  let overallHtml = `
+    <div class="summary-section">
+      <div><strong>Suspicious indicators:</strong> ${suspiciousCount}</div>
+      <div><strong>Normal indicators:</strong> ${normalCount}</div>
+      <div><strong>Model-evaluated indicators:</strong> ${modelEvaluated}</div>
+      <div><strong>Most important suspicious:</strong> ${mostSuspicious}</div>
+      <div><strong>Most important legitimate:</strong> ${mostLegitimate}</div>
+    </div>
+  `;
+
+  return {
+    result,
+    confidence,
+    brief,
+    highlights,
+    overallHtml,
+    featuresHtml: buildFeatureTable(summary.features || []),
+  };
+}
+
 document.getElementById("check").addEventListener("click", function () {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     let url = tabs[0].url;
-    let features = extractFeatures(url);
+    let fullviewUrl = chrome.runtime.getURL("fullview.html") + "?siteUrl=" + encodeURIComponent(url);
 
-    fetch("http://127.0.0.1:5000/predict", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        features: features
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      document.getElementById("result").innerText = data.prediction;
-    })
-    .catch(error => {
-      document.getElementById("result").innerText = "Error: " + error.message;
+    chrome.windows.create({
+      url: fullviewUrl,
+      type: "popup",
+      state: "fullscreen"
     });
   });
 });

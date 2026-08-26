@@ -4,3 +4,5 @@ scikit-learn
 flask
 joblib
 waitress
+requests
+beautifulsoup4

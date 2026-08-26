@@ -1,14 +1,15 @@
+import os
 from pathlib import Path
 import sys
 
-from flask import Flask, jsonify, request
 import joblib
 import numpy as np
 import requests
+from flask import Flask, request, jsonify
 from urllib.parse import urlparse
 import re
 
-ROOT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
@@ -17,8 +18,8 @@ from page_analysis import analyze_public_url
 
 
 def extract_url_features(url: str) -> list[int]:
-    """Match the trained model's 48-feature vector for URL-only requests."""
-    features = [0] * 48
+    """Build the 48-feature vector expected by the trained phishing model."""
+    features = [0] * EXPECTED_FEATURE_COUNT
     if not url:
         return features
 
@@ -29,9 +30,9 @@ def extract_url_features(url: str) -> list[int]:
 
     full_url = url.lower()
     hostname = (parsed.hostname or "").lower()
-    hostname_parts = [part for part in hostname.split(".") if part]
     path_text = parsed.path or ""
     query = parsed.query or ""
+    hostname_parts = [part for part in hostname.split(".") if part]
 
     if hostname:
         features[0] = hostname.count(".")
@@ -127,7 +128,7 @@ def build_domain_reputation(features: list[float], prediction: str) -> dict:
 
 app = Flask(__name__)
 
-MODEL_PATH = Path(__file__).resolve().parent / "model" / "phishing_model.pkl"
+MODEL_PATH = ROOT_DIR / "model" / "phishing_model.pkl"
 EXPECTED_FEATURE_COUNT = 48
 
 if not MODEL_PATH.exists():
@@ -135,9 +136,6 @@ if not MODEL_PATH.exists():
 
 model = joblib.load(MODEL_PATH)
 
-@app.route("/")
-def home():
-    return "Phishing Detection API Running"
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -148,23 +146,17 @@ def predict():
         url = data.get("url", "")
         if not url:
             return jsonify({"error": "Request JSON must include a 'features' list or 'url' string."}), 400
+
         features = extract_url_features(url)
     elif not isinstance(features, list):
         return jsonify({"error": "'features' must be a list of numeric values."}), 400
 
-    if len(features) != EXPECTED_FEATURE_COUNT:
-        return (
-            jsonify(
-                {
-                    "error": f"Expected {EXPECTED_FEATURE_COUNT} feature values, got {len(features)}."
-                }
-            ),
-            400,
-        )
-
     page_features = data.get("page_features")
     if isinstance(page_features, dict):
         features = apply_page_features(features, page_features)
+
+    if len(features) != EXPECTED_FEATURE_COUNT:
+        return jsonify({"error": f"Expected {EXPECTED_FEATURE_COUNT} feature values, got {len(features)}."}), 400
 
     try:
         features_array = np.array(features, dtype=float).reshape(1, -1)
@@ -185,15 +177,13 @@ def predict():
     explanation = generate_explanation(features, result)
     domain_reputation = build_domain_reputation(features, result)
 
-    return jsonify(
-        {
-            "prediction": result,
-            "confidence": confidence,
-            "summary": summary,
-            "explanation": explanation,
-            "domain_reputation": domain_reputation,
-        }
-    )
+    return jsonify({
+        "prediction": result,
+        "confidence": confidence,
+        "summary": summary,
+        "explanation": explanation,
+        "domain_reputation": domain_reputation,
+    })
 
 
 @app.route("/analyze-url", methods=["POST"])
@@ -231,8 +221,8 @@ def analyze_url():
     except (ValueError, requests.RequestException) as error:
         return jsonify({"error": str(error)}), 400
 
+
 if __name__ == "__main__":
-    import os
-    from waitress import serve
     port = int(os.environ.get("PORT", 5000))
-    serve(app, host="0.0.0.0", port=port)
+    print(f"Starting Flask app on port: {port}")
+    app.run(host="0.0.0.0", port=port)

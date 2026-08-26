@@ -1,8 +1,30 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html>
 <head>
 <title>Phishing Detector</title>
 <link rel="stylesheet" href="style.css">
-</head><body><h2>Phishing Detection</h2><button id="check">Check Website</button>
+</head>
+<body>
+<h2>Phishing Detection</h2>
+<button id="check">Check</button>
 
-<p id="result"></p><script src="popup.js"></script></body>
+<p class="popup-note">The detailed AI Security Summary will open in a full-screen window.</p>
+
+<div id="resultContainer" style="display: none;">
+  <div id="predictionResult" class="prediction-box"></div>
+  <div id="summaryCard" class="summary-card" style="display: none;">
+    <div class="summary-header">🤖 AI Security Summary</div>
+    <div id="summaryResult" class="summary-row"></div>
+    <div id="summaryConfidence" class="summary-row"></div>
+    <div id="summaryBrief" class="summary-brief"></div>
+    <div id="summaryHighlights" class="summary-highlights"></div>
+    <div id="summaryOverall" class="summary-overall"></div>
+    <div id="summaryFeatures" class="summary-features"></div>
+  </div>
+  <div id="explanationText" class="explanation-box"></div>
+  <div id="warningText" class="warning-box"></div>
+</div>
+
+<script src="popup.js"></script>
+</body>
 </html>

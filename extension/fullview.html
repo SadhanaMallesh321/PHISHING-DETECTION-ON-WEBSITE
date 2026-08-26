@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Phishing Security Report</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="fullview-container">
+    <header class="fullview-header">
+      <h1>Phishing Security Report</h1>
+      <div id="pageUrl" class="page-url"></div>
+    </header>
+
+    <div class="fullview-content">
+      <div id="loadingMessage" class="loading-message">Loading security summary...</div>
+      <div id="reportContainer" class="report-container" style="display: none;">
+        <div id="predictionResult" class="prediction-box"></div>
+        <div id="riskVisualization" class="risk-visualization" aria-label="Security risk visualization"></div>
+        <div id="summaryCard" class="summary-card"></div>
+        <div id="explanationText" class="explanation-box"></div>
+        <div id="warningText" class="warning-box"></div>
+        <div id="navigationActions" class="navigation-actions" style="display: none;">
+          <button id="continueToSite" type="button">Open website</button>
+          <button id="returnToPrevious" type="button">Go back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="fullview.js"></script>
+</body>
+</html>
