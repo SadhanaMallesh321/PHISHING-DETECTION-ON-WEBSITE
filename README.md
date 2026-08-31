@@ -6,7 +6,7 @@ A comprehensive phishing detection system that includes a machine learning model
 
 - **Machine Learning Model**: Trained on phishing dataset to classify websites
 - **Flask API**: RESTful API for phishing prediction
-- **Browser Extension**: Chrome extension that detects phishing sites in real-time
+- **Browser Extension**: Chrome extension that detects phishing sites in real-timing
 
 ## Project Structure
 
