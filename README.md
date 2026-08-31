@@ -46,7 +46,7 @@ A comprehensive phishing detection system that includes a machine learning model
 
 3. Install dependencies:
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements.txt 
    ```
 
 ## Usage
